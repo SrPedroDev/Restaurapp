@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New PedidoItem{% endblock %}
+
+{% block body %}
+    <h1>Create new PedidoItem</h1>
+
+    {{ include('pedido_item/_form.html.twig') }}
+
+    <a href="{{ path('app_pedido_item_index') }}">back to list</a>
+{% endblock %}

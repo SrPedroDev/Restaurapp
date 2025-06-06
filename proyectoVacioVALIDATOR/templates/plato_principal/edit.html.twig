@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit PlatoPrincipal{% endblock %}
+
+{% block body %}
+    <h1>Edit PlatoPrincipal</h1>
+
+    {{ include('plato_principal/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_plato_principal_index') }}">back to list</a>
+
+    {{ include('plato_principal/_delete_form.html.twig') }}
+{% endblock %}

@@ -18,11 +18,14 @@ class MomentoReserva
     #[ORM\JoinColumn(nullable: false)]
     private ?Mesa $mesa = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $inicio = null;
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $fecha = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $fin = null;
+    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    private ?\DateTimeInterface $horaInicio = null;
+
+    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    private ?\DateTimeInterface $horaFin = null;
 
     #[ORM\Column]
     private ?bool $disponibilidad = true;
@@ -38,9 +41,6 @@ class MomentoReserva
     {
         $this->disponibilidad = true;
     }
-    
-
-
 
     public function getId(): ?int
     {
@@ -55,31 +55,39 @@ class MomentoReserva
     public function setMesa(?Mesa $mesa): static
     {
         $this->mesa = $mesa;
-
         return $this;
     }
 
-    public function getInicio(): ?\DateTimeInterface
+    public function getFecha(): ?\DateTimeInterface
     {
-        return $this->inicio;
+        return $this->fecha;
     }
 
-    public function setInicio(\DateTimeInterface $inicio): static
+    public function setFecha(\DateTimeInterface $fecha): static
     {
-        $this->inicio = $inicio;
-
+        $this->fecha = $fecha;
         return $this;
     }
 
-    public function getFin(): ?\DateTimeInterface
+    public function getHoraInicio(): ?\DateTimeInterface
     {
-        return $this->fin;
+        return $this->horaInicio;
     }
 
-    public function setFin(\DateTimeInterface $fin): static
+    public function setHoraInicio(\DateTimeInterface $horaInicio): static
     {
-        $this->fin = $fin;
+        $this->horaInicio = $horaInicio;
+        return $this;
+    }
 
+    public function getHoraFin(): ?\DateTimeInterface
+    {
+        return $this->horaFin;
+    }
+
+    public function setHoraFin(\DateTimeInterface $horaFin): static
+    {
+        $this->horaFin = $horaFin;
         return $this;
     }
 
@@ -91,7 +99,6 @@ class MomentoReserva
     public function setDisponibilidad(bool $disponibilidad): static
     {
         $this->disponibilidad = $disponibilidad;
-
         return $this;
     }
 
@@ -109,15 +116,14 @@ class MomentoReserva
         return $this;
     }
 
-    public function getTurno(): ?turno
+    public function getTurno(): ?Turno
     {
         return $this->turno;
     }
 
-    public function setTurno(?turno $turno): static
+    public function setTurno(?Turno $turno): static
     {
         $this->turno = $turno;
-
         return $this;
     }
 }

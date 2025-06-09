@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block cabezaApartado %}
+<h2 class="mb-4">
+    Disponibilidad del turno - {{ turno.fecha|date('d/m/Y') }} 
+    <span class="text-muted">({{ turno.tipo|capitalize }})</span>
+</h2>
+
+<a href="{{ path('gestion_turnos') }}" class="badge bg-secondary"> -- VOLVER --</a>
+{% endblock %}
+
+
+{% block contenidoApartado %}
+{% if momentos is empty %}
+    <div class="alert alert-info">No hay momentos de reserva disponibles para este turno.</div>
+{% else %}
+    {% for mesaId, data in momentos %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Mesa {{ data.mesa.identificador }}</h5>
+            </div>
+            <div class="card-body p-2">
+                {% for momento in data.momentos %}
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2 px-1">
+                        <div class="fw-semibold">
+                            {{ momento.horaInicio|date('H:i') }} - {{ momento.horaFin|date('H:i') }}
+                        </div>
+                        <div>
+                            {% if momento.reserva %}
+                                <span class="badge bg-danger">Reservado</span>
+                            {% else %}
+                                <a href="{{ path('gestion_turnos') }}" class="badge bg-primary"> -- RESERVAR --</a>
+                                <span class="badge bg-success">Libre</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

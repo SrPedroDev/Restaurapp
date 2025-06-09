@@ -1,16 +1,17 @@
 {% extends 'base.html.twig' %}
 
 {% block cabezaApartado %}
-<h1>Calendario de Turnos</h1>
+<h1>Calendario de Apertura del restaurante</h1>
 <a href="{{ path('gestion_turnos') }}" class="badge bg-primary"> -- VOLVER --</a>
-
 {% endblock %}
 
 {% block contenidoApartado %}
 
+{% set hoy = "now"|date("Y-m-d") %}
+
 {% for calendario in calendarios %}
     <h2>{{ calendario.nombreMes }}</h2>
-    <table class="table table-bordered table-striped calendario-tabla">        
+    <table class="table table-bordered table-striped calendario-tabla">
         <thead>
             <tr>
                 <th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th><th>Sábado</th><th>Domingo</th>
@@ -21,30 +22,30 @@
                 <tr>
                     {% for dia in semana %}
                         {% if dia %}
-                                <td>
-                                {% set hoy = "now"|date("Y-m-d") %}
-                                {% set fechaDia = dia.fecha|date("Y-m-d") %}
-
-                                {% if fechaDia >= hoy %}
-                                    <a href="{{ path('turnos_mostrar_dia', {'fecha': dia.fecha.format('Y-m-d')}) }}">
-                                    <strong>{{ dia.fecha.format('d') }}</strong>
+                            {% set fechaDia = dia.fecha|date("Y-m-d") %}
+                            <td>
+                                {% if dia.turnos is not empty and fechaDia >= hoy %}
+                                    <a href="{{ path('gestion_mostrar_turnos', {'fecha': fechaDia}) }}">
+                                        <strong>{{ dia.fecha.format('d') }}</strong>
                                     </a>
                                 {% else %}
                                     <strong>{{ dia.fecha.format('d') }}</strong>
                                 {% endif %}
 
                                 <br>
-                                {% for turno in dia.turnos %}
-                                    <div>
-                                    {{ turno.tipo }}<br>
-                                    {{ turno.horaInicio|date('H:i') }} - {{ turno.horaFin|date('H:i') }}
-                                    <br>
-                                    <br>
-                                    </div>
+
+                                {% if dia.turnos is not empty %}
+                                    {% for turno in dia.turnos %}
+                                        <div>
+                                            {{ turno.tipo }}<br>
+                                            {{ turno.horaInicio|date('H:i') }} - {{ turno.horaFin|date('H:i') }}
+                                            <br><br>
+                                        </div>
+                                    {% endfor %}
                                 {% else %}
                                     <div>No hay turnos</div>
-                                {% endfor %}
-                                </td>
+                                {% endif %}
+                            </td>
                         {% else %}
                             <td></td>
                         {% endif %}
@@ -55,7 +56,6 @@
     </table>
     <br>
 {% endfor %}
-
 
 {% for label, messages in app.flashes %}
     {% for message in messages %}

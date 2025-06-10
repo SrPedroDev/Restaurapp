@@ -87,7 +87,7 @@ class TurnoGeneratorService
         }
     }
 
-    public function generarMomentosReservaParaTurno(Turno $turno): void
+    public function generarMomentosReservaParaTurno(Turno $turno): void     // CAMBIAR ESTA PARTE?
 {
     // Eliminar momentos antiguos
     $momentosAntiguos = $this->em->getRepository(MomentoReserva::class)->findBy(['turno' => $turno]);

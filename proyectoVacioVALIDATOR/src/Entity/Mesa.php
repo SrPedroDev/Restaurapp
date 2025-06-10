@@ -28,14 +28,14 @@ class Mesa
     #[ORM\OneToMany(targetEntity: Reserva::class, mappedBy: 'mesa')]
     private Collection $reservas;
 
-    #[ORM\Column(length: 255)]
-    private ?string $disponibilidad = null;
-
     /**
      * @var Collection<int, MomentoReserva>
      */
     #[ORM\OneToMany(targetEntity: MomentoReserva::class, mappedBy: 'mesa')]
     private Collection $momentoReserva;
+
+    #[ORM\Column]
+    private ?bool $operativa = null;
 
     public function __construct()
     {
@@ -102,17 +102,6 @@ class Mesa
         return $this;
     }
 
-    public function getDisponibilidad(): ?string
-    {
-        return $this->disponibilidad;
-    }
-
-    public function setDisponibilidad(string $disponibilidad): static
-    {
-        $this->disponibilidad = $disponibilidad;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, MomentoReserva>
@@ -140,6 +129,18 @@ class Mesa
                 $momentoReserva->setMesa(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isOperativa(): ?bool
+    {
+        return $this->operativa;
+    }
+
+    public function setOperativa(bool $operativa): static
+    {
+        $this->operativa = $operativa;
 
         return $this;
     }

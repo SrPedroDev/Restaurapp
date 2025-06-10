@@ -2,6 +2,8 @@
 
 {% block cabezaApartado %}
 <h1>Configurar Turnos Generales</h1>
+<a href="{{ path('inicio_turno') }}" class="badge bg-primary"> -- VOLVER --</a>
+
 {% endblock %}
 
 {% block contenidoApartado %}
@@ -46,9 +48,6 @@
 
     <button type="submit">Guardar</button>
 </form>
-
-<a href="{{ path('inicio_turno')}}" class="">← Volver</a>
-
 {% for label, messages in app.flashes %}
     {% for message in messages %}
         <div class="flash-{{ label }}">

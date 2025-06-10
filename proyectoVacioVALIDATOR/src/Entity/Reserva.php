@@ -35,7 +35,7 @@ class Reserva
     private ?\DateTimeInterface $fechaHora = null;
 
 
-    #[ORM\OneToOne(mappedBy: 'reserva', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'reserva', cascade: ['persist'])]
     private ?MomentoReserva $momentoReserva = null;
 
     #[ORM\OneToOne(inversedBy: 'reserva', cascade: ['persist', 'remove'])]

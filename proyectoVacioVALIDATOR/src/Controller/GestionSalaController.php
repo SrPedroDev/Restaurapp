@@ -9,6 +9,8 @@ use App\Entity\Turno;
 use App\Entity\TurnoGeneral;
 use App\Entity\Mesa;
 use App\Entity\MomentoReserva;
+use App\Entity\Reserva;
+use App\Repository\ReservaRepository;
 use App\Repository\TurnoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GestionSalaService;
@@ -24,6 +26,18 @@ final class GestionSalaController extends AbstractController
         $this->em = $em;
         $this->gestionSalaService = $gestionSalaService;
     }
+
+
+    #[Route('/Gestion/Sala', name: 'gestion_sala_menu')]
+    public function menuGestionSala(): Response
+    {
+        $fechaHoy = new \DateTime(); // Fecha actual
+        return $this->render('gestion_sala/menu.html.twig', [
+            'fechaHoy' => $fechaHoy->format('Y-m-d')
+        ]);
+    }
+
+
 
     #[Route('/gestion/sala/estado', name: 'gestion_sala_estado')]
     public function index(Request $request, TurnoRepository $turnoRepo): Response
@@ -134,7 +148,7 @@ final class GestionSalaController extends AbstractController
 
 
 
-#[Route('/sala/disponibilidad/{id}', name: 'sala_disponibilidad')]
+    #[Route('/sala/disponibilidad/{id}', name: 'sala_disponibilidad')]
     public function verDisponibilidad(int $id): Response
     {
         $turno = $this->em->getRepository(Turno::class)->find($id);
@@ -144,11 +158,164 @@ final class GestionSalaController extends AbstractController
 
         $momentos = $this->gestionSalaService->getMomentosReservaPorTurno($turno);
 
+        $horaActual = new \DateTime();
+
         return $this->render('gestion_sala/disponibilidad.html.twig', [
             'turno' => $turno,
             'momentos' => $momentos,
+            'horaActual' => $horaActual,
         ]);
     }
+
+
+
+    #[Route('/reserva/nueva/{id}', name: 'reserva_opciones')]
+    public function seleccionarTipoReserva(int $id, EntityManagerInterface $em): Response
+    {
+        $momento = $em->getRepository(MomentoReserva::class)->find($id);
+
+        if (!$momento || $momento->getReserva()) {
+            return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento?->getTurno()->getId()]);
+        }
+
+        return $this->render('gestion_sala/reserva_opciones.html.twig', [
+            'momento' => $momento
+        ]);
+    }
+
+
+    #[Route('/reserva/asignar/{id}', name: 'reserva_asignar')]
+    public function asignarMesa(Request $request, int $id, EntityManagerInterface $em): Response
+    {
+        $momento = $em->getRepository(MomentoReserva::class)->find($id);
+
+        if (!$momento || $momento->getReserva()) {
+            $this->addFlash('danger', 'Este momento no está disponible.');
+            return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento?->getTurno()->getId()]);
+        }
+
+        if ($request->isMethod('POST')) {
+            $nombre = $request->request->get('nombre');
+
+            $reserva = new Reserva();
+            $reserva->setNombreCliente($nombre ?: 'Cliente Local');
+            $reserva->setNumeroComensales(0); // Número de comensales por defecto
+            $reserva->setFechaHora(new \DateTime($momento->getFecha()->format('Y-m-d') . ' ' . $momento->getHoraInicio()->format('H:i:s')));
+            $reserva->setMesa($momento->getMesa());
+            $reserva->setMomentoReserva($momento);
+            $reserva->setTelefono('999999999'); // Teléfono por defecto
+            $reserva->setEmail('fakeEmail@gmail.com'); // Email por defecto
+
+            $em->persist($reserva);
+            $em->flush();
+
+            $this->addFlash('success', 'Mesa asignada correctamente.');
+            return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento->getTurno()->getId()]);
+        }
+
+        return $this->render('gestion_sala/asignar_mesa.html.twig', [
+            'momento' => $momento
+        ]);
+    }
+
+    #[Route('/reserva/crear/{id}', name: 'reserva_crear_formulario')]
+    public function crearFormulario(Request $request, int $id, EntityManagerInterface $em): Response
+    {
+        $momento = $em->getRepository(MomentoReserva::class)->find($id);
+
+        if (!$momento || $momento->getReserva()) {
+            $this->addFlash('danger', 'Este momento no está disponible.');
+            return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento?->getTurno()->getId()]);
+        }
+
+        if ($request->isMethod('POST')) {
+            $reserva = new Reserva();
+            $reserva->setNombreCliente($request->request->get('nombre'));
+            $reserva->setTelefono($request->request->get('telefono'));
+            $reserva->setEmail($request->request->get('email'));
+            $reserva->setNumeroComensales($request->request->get('comensales'));
+            $reserva->setFechaHora(new \DateTime($momento->getFecha()->format('Y-m-d') . ' ' . $momento->getHoraInicio()->format('H:i:s')));
+            $reserva->setMesa($momento->getMesa());
+            $reserva->setMomentoReserva($momento);
+
+            $em->persist($reserva);
+            $em->flush();
+
+            $this->addFlash('success', 'Reserva creada correctamente.');
+            return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento->getTurno()->getId()]);
+        }
+
+        return $this->render('gestion_sala/crear_reserva.html.twig', [
+            'momento' => $momento
+        ]);
+    }
+
+
+
+    
+    #[Route('/Gestion/Reserva/Eliminar/{id}', name: 'gestion_reserva_eliminar')]
+    public function eliminarReserva(Reserva $reserva, EntityManagerInterface $em, Request $request): Response
+    {
+        // Confirmación por método POST
+        if ($request->isMethod('POST')) {
+            // Desvincula del MomentoReserva si existe
+            $momento = $reserva->getMomentoReserva();
+            if ($momento) {
+                $momento->setReserva(null);
+            }
+
+            $em->remove($reserva);
+            $em->flush();
+
+            $this->addFlash('success', 'Reserva eliminada correctamente.');
+            return $this->redirectToRoute('gestion_sala_estado'); 
+        }
+
+        return $this->render('gestion_sala/confirmar_eliminacion.html.twig', [
+            'reserva' => $reserva,
+        ]);
+    }
+
+    #[Route('/Gestion/Reservas', name: 'gestion_reservas_listado')]
+    public function listarReservasFuturas(ReservaRepository $reservaRepository): Response
+    {
+        $hoy = new \DateTime('today');
+
+        // Obtenemos las reservas futuras ordenadas por fecha
+        $reservas = $reservaRepository->createQueryBuilder('r')
+            ->where('r.fechaHora >= :hoy')
+            ->setParameter('hoy', $hoy)
+            ->orderBy('r.fechaHora', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Agrupar por fecha (formateada como Y-m-d)
+        $reservasAgrupadas = [];
+        foreach ($reservas as $reserva) {
+            $fecha = $reserva->getFechaHora()->format('Y-m-d');
+            $reservasAgrupadas[$fecha][] = $reserva;
+        }
+
+        return $this->render('gestion_sala/listado_reservas.html.twig', [
+            'reservasPorDia' => $reservasAgrupadas,
+        ]);
+    }
+
+
+    #[Route('/Gestion/Reserva/Detalle/{id}', name: 'gestion_reserva_detalle')]
+    public function detalleReserva(Reserva $reserva, Request $request): Response
+    {
+        $urlAnterior = $request->headers->get('referer');
+
+        return $this->render('gestion_sala/detalle_reserva.html.twig', [
+            'reserva' => $reserva,
+            'volverA' => $urlAnterior,
+        ]);
+    }
+
+
+
+
 
 
 

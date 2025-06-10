@@ -1,7 +1,10 @@
 {% extends 'base.html.twig' %}
 
+{% block cabezaApartado %}
+    <h2>Confirmar cambios en el turno</h2>
+{% endblock %}
+
 {% block contenidoApartado %}
-    <h2>Confirmar eliminación de turno</h2>
 
     <p><strong>Tipo:</strong> {{ turno.tipo }}</p>
     <p><strong>Horario:</strong> {{ turno.horaInicio|date('H:i') }} - {{ turno.horaFin|date('H:i') }}</p>

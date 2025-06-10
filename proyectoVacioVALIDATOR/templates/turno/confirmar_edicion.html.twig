@@ -1,7 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block contenidoApartado %}
+
+{% block cabezaApartado %}
     <h2>Confirmar cambios en el turno</h2>
+    <a href="{{ path('turnos_mostrar_dia', {'fecha': turno.fecha|date('Y-m-d')}) }}" class="badge bg-secondary">← Volver</a>
+{% endblock %}
+
+
+{% block contenidoApartado %}
 
     <p><strong>Tipo:</strong> {{ turno.tipo }}</p>
     <p><strong>Horario actual:</strong> {{ turno.horaInicio|date('H:i') }} - {{ turno.horaFin|date('H:i') }}</p>

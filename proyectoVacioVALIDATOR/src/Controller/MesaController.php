@@ -11,70 +11,69 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/mesa')]
-final class MesaController extends AbstractController{
-    #[Route(name: 'app_mesa_index', methods: ['GET'])]
+#[Route('/Gestion/Mesas', name: 'gestion_mesas_')]
+class MesaController extends AbstractController
+{
+    #[Route('/', name: 'index')]
     public function index(MesaRepository $mesaRepository): Response
     {
-        return $this->render('mesa/index.html.twig', [
-            'mesas' => $mesaRepository->findAll(),
+        $mesas = $mesaRepository->findAll();
+
+        return $this->render('gestion_mesas/index.html.twig', [
+            'mesas' => $mesas,
         ]);
     }
 
-    #[Route('/new', name: 'app_mesa_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/nueva', name: 'nueva')]
+    public function nueva(Request $request, EntityManagerInterface $em): Response
     {
         $mesa = new Mesa();
         $form = $this->createForm(MesaType::class, $mesa);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($mesa);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_mesa_index', [], Response::HTTP_SEE_OTHER);
+            $em->persist($mesa);
+            $em->flush();
+            $this->addFlash('success', 'Mesa creada correctamente.');
+            return $this->redirectToRoute('gestion_mesas_index');
         }
 
-        return $this->render('mesa/new.html.twig', [
-            'mesa' => $mesa,
-            'form' => $form,
+        return $this->render('gestion_mesas/formulario.html.twig', [
+            'form' => $form->createView(),
+            'editar' => false,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_mesa_show', methods: ['GET'])]
-    public function show(Mesa $mesa): Response
-    {
-        return $this->render('mesa/show.html.twig', [
-            'mesa' => $mesa,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_mesa_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Mesa $mesa, EntityManagerInterface $entityManager): Response
+    #[Route('/editar/{id}', name: 'editar')]
+    public function editar(Mesa $mesa, Request $request, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(MesaType::class, $mesa);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_mesa_index', [], Response::HTTP_SEE_OTHER);
+            $em->flush();
+            $this->addFlash('success', 'Mesa actualizada correctamente.');
+            return $this->redirectToRoute('gestion_mesas_index');
         }
 
-        return $this->render('mesa/edit.html.twig', [
-            'mesa' => $mesa,
-            'form' => $form,
+        return $this->render('gestion_mesas/formulario.html.twig', [
+            'form' => $form->createView(),
+            'editar' => true,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_mesa_delete', methods: ['POST'])]
-    public function delete(Request $request, Mesa $mesa, EntityManagerInterface $entityManager): Response
+    #[Route('/eliminar/{id}', name: 'eliminar')]
+    public function eliminar(Mesa $mesa, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$mesa->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($mesa);
-            $entityManager->flush();
+        if (count($mesa->getReservas()) > 0) {
+            $this->addFlash('danger', 'No se puede eliminar la mesa porque tiene reservas asociadas.');
+            return $this->redirectToRoute('gestion_mesas_index');
         }
 
-        return $this->redirectToRoute('app_mesa_index', [], Response::HTTP_SEE_OTHER);
+        $em->remove($mesa);
+        $em->flush();
+
+        $this->addFlash('success', 'Mesa eliminada correctamente.');
+        return $this->redirectToRoute('gestion_mesas_index');
     }
 }

@@ -10,6 +10,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -20,6 +22,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 use App\Entity\Producto;
 use App\Entity\Categoria;
+use App\Repository\ProductoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 
@@ -126,33 +129,33 @@ public function editarProducto(int $id, Request $request, EntityManagerInterface
 
 
 
-        #[Route('/producto/eliminar/{id}', name: 'producto_eliminar')]
-        public function eliminarProducto(int $id, EntityManagerInterface $entityManager): Response
-        {
-            $producto = $entityManager->getRepository(Producto::class)->find($id);
+    #[Route('/producto/eliminar/{id}', name: 'producto_eliminar')]
+    public function eliminarProducto(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $producto = $entityManager->getRepository(Producto::class)->find($id);
 
-            if (!$producto) {
-                throw $this->createNotFoundException('Producto no encontrado');
-            }
-
-            // Eliminar imagen si existe
-            if ($producto->getImagen()) {
-                $ruta = __DIR__ . '/../../public/uploads/productoImg/' . $producto->getImagen();
-                if (file_exists($ruta)) {
-                    unlink($ruta);
-                }
-            }
-
-            // Eliminar producto
-            $entityManager->remove($producto);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Producto eliminado correctamente.');
-
-            return $this->redirectToRoute('productos_por_categoria', [
-                'id' => $producto->getCategoria()->getId()
-            ]);
+        if (!$producto) {
+            throw $this->createNotFoundException('Producto no encontrado');
         }
+
+        // Eliminar imagen si existe
+        if ($producto->getImagen()) {
+            $ruta = __DIR__ . '/../../public/uploads/productoImg/' . $producto->getImagen();
+            if (file_exists($ruta)) {
+                unlink($ruta);
+            }
+            }
+
+        // Eliminar producto
+        $entityManager->remove($producto);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Producto eliminado correctamente.');
+
+        return $this->redirectToRoute('productos_por_categoria', [
+                'id' => $producto->getCategoria()->getId()
+        ]);
+    }
 
     #[Route('/producto/nuevo/{categoriaId}', name: 'producto_nuevo')]
     public function nuevoProducto(int $categoriaId, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
@@ -230,4 +233,24 @@ public function editarProducto(int $id, Request $request, EntityManagerInterface
         ]);
 
         }
+
+
+ #[Route('/api/productos', name: 'api_productos', methods: ['GET'])]    //Se llama a esta ruta desde el front para obtener los productos por categoria
+    public function productosPorCategoria(Request $request, ProductoRepository $repo): JsonResponse
+    {
+        $categoria = $request->query->get('categoria');
+
+        if ($categoria) {
+            $productos = $repo->findRandomByCategoria($categoria, 6);
+        } else {
+            $productos = $repo->findBy([], ['nombre' => 'ASC'], 200);
+        }
+
+        return $this->json($productos, 200, [], ['groups' => 'producto:listado']);
+    }
+
+
+
+
+
 }

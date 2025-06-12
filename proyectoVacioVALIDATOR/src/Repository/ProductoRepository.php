@@ -16,6 +16,24 @@ class ProductoRepository extends ServiceEntityRepository
         parent::__construct($registry, Producto::class);
     }
 
+
+
+
+
+    public function findRandomByCategoria(string $nombre, int $limite): array
+{
+    $productos = $this->createQueryBuilder('p')     //Se toman todos los productos de X categoría , se mezcla el array
+        ->join('p.categoria', 'c')                 //Y se devuelven las 6 (o las que se ponga) primeras entradas que se encuentren en el array mezclado (random)
+        ->where('c.nombre = :nombre')
+        ->setParameter('nombre', $nombre)
+        ->getQuery()
+        ->getResult();
+
+    shuffle($productos);
+
+    return array_slice($productos, 0, $limite);
+}
+
 //    /**
 //     * @return Producto[] Returns an array of Producto objects
 //     */

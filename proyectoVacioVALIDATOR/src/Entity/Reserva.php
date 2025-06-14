@@ -28,7 +28,7 @@ class Reserva
     private ?int $numeroComensales = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservas')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Mesa $mesa = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

@@ -10,7 +10,10 @@
         {{ form_start(form) }}
             {{ form_row(form.identificador) }}
             {{ form_row(form.capacidad) }}
-            {{ form_row(form.guardar) }}
+            {{ form_row(form.operativa) }}
+
+        <button class="btn btn-success">{{ editar ? 'Actualizar' : 'Crear' }}</button>
+        <a href="{{ path('gestion_mesas_index') }}" class="btn btn-secondary">Volver</a>
         {{ form_end(form) }}
     </div>
 {% endblock %}

@@ -8,6 +8,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MesaType extends AbstractType
@@ -21,9 +22,9 @@ class MesaType extends AbstractType
             ->add('capacidad', IntegerType::class, [
                 'label' => 'Nº de Comensales',
             ])
-            ->add('guardar', SubmitType::class, [
-                'label' => 'Guardar',
-                'attr' => ['class' => 'btn btn-primary mt-3']
+            ->add('operativa', CheckboxType::class, [
+                'label' => 'Mesa Operativa',
+                'required' => false,
             ]);
     }
 }

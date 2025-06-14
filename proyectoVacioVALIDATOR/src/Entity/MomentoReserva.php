@@ -15,7 +15,7 @@ class MomentoReserva
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'momentoReserva')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true , onDelete: 'SET NULL')]
     private ?Mesa $mesa = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
@@ -31,6 +31,7 @@ class MomentoReserva
     private ?bool $disponibilidad = true;
 
     #[ORM\OneToOne(inversedBy: 'momentoReserva', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Reserva $reserva = null;
 
     #[ORM\ManyToOne(inversedBy: 'momentoReservas')]

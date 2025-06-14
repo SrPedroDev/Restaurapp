@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\MomentoReserva;
+use App\Entity\Mesa;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,6 +16,19 @@ class MomentoReservaRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, MomentoReserva::class);
     }
+
+    
+    public function findFuturosByMesa(Mesa $mesa): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.mesa = :mesa')
+            ->andWhere('m.fecha > :ahora')
+            ->setParameter('mesa', $mesa)
+            ->setParameter('ahora', new \DateTime())
+            ->getQuery()
+            ->getResult();
+    }
+
 
 //    /**
 //     * @return MomentoReserva[] Returns an array of MomentoReserva objects

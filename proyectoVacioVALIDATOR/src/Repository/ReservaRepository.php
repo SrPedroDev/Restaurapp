@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Reserva;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Mesa;
 
 /**
  * @extends ServiceEntityRepository<Reserva>
@@ -15,6 +16,19 @@ class ReservaRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Reserva::class);
     }
+
+
+    public function findFuturasByMesa(Mesa $mesa): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.mesa = :mesa')
+            ->andWhere('r.fechaHora > :ahora')
+            ->setParameter('mesa', $mesa)
+            ->setParameter('ahora', new \DateTime())
+            ->getQuery()
+            ->getResult();
+    }
+
 
 //    /**
 //     * @return Reserva[] Returns an array of Reserva objects

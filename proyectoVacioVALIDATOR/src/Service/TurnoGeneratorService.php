@@ -87,51 +87,57 @@ class TurnoGeneratorService
         }
     }
 
+
     public function generarMomentosReservaParaTurno(Turno $turno): void     // CAMBIAR ESTA PARTE?
-{
-    // Eliminar momentos antiguos
-    $momentosAntiguos = $this->em->getRepository(MomentoReserva::class)->findBy(['turno' => $turno]);
-    foreach ($momentosAntiguos as $momento) {
-        $this->em->remove($momento);
-    }
-    $this->em->flush();
+    {
+        // Eliminar momentos antiguos
+        $momentosAntiguos = $this->em->getRepository(MomentoReserva::class)->findBy(['turno' => $turno]);
+        foreach ($momentosAntiguos as $momento) {
+            $this->em->remove($momento);
+        }
+        $this->em->flush();
 
-    $mesas = $this->em->getRepository(Mesa::class)->findAll();
-    $horaInicio = clone $turno->getHoraInicio();
-    $horaFin = clone $turno->getHoraFin();
-    $reservasPorMesa = $turno->getreservasPorMesa();
+        $mesas = $this->em->getRepository(Mesa::class)->findBy(['operativa' => true]);
 
-    if ($reservasPorMesa <= 0) {
-        return;
-    }
+        $horaInicio = clone $turno->getHoraInicio();
+        $horaFin = clone $turno->getHoraFin();
+        $reservasPorMesa = $turno->getreservasPorMesa();
 
-    $pausaEntreReservas = 5 * 60; // segundos
-    $intervaloTotal = $horaFin->getTimestamp() - $horaInicio->getTimestamp();
-    $duracionBloque = (int) floor($intervaloTotal / $reservasPorMesa);
+        if ($reservasPorMesa <= 0) {
+            return;
+        }
 
-    foreach ($mesas as $mesa) {
-        $inicioBloque = clone $horaInicio;
+        $pausaEntreReservas = 5 * 60; // segundos
+        $intervaloTotal = $horaFin->getTimestamp() - $horaInicio->getTimestamp();
+        $duracionBloque = (int) floor($intervaloTotal / $reservasPorMesa);
 
-        for ($i = 0; $i < $reservasPorMesa; $i++) {
-            $finBloque = (clone $inicioBloque)->modify("+$duracionBloque seconds");
+        foreach ($mesas as $mesa) {
+            $inicioBloque = clone $horaInicio;
 
-            $momento = new MomentoReserva();
-            $momento->setMesa($mesa);
-            $momento->setTurno($turno);
+            for ($i = 0; $i < $reservasPorMesa; $i++) {
+                $finBloque = (clone $inicioBloque)->modify("+$duracionBloque seconds");
 
-            // Establecemos la fecha del turno
-            $momento->setFecha(clone $turno->getFecha());
+                $momento = new MomentoReserva();
+                $momento->setMesa($mesa);
+                $momento->setTurno($turno);
 
-            // Guardamos solo la hora en TIME
-            $momento->setHoraInicio(\DateTime::createFromFormat('H:i:s', $inicioBloque->format('H:i:s')));
-            $momento->setHoraFin(\DateTime::createFromFormat('H:i:s', $finBloque->format('H:i:s')));
+                // Establecemos la fecha del turno
+                $momento->setFecha(clone $turno->getFecha());
 
-            $this->em->persist($momento);
+                // Guardamos solo la hora en TIME
+                $momento->setHoraInicio(\DateTime::createFromFormat('H:i:s', $inicioBloque->format('H:i:s')));
+                $momento->setHoraFin(\DateTime::createFromFormat('H:i:s', $finBloque->format('H:i:s')));
 
-            // Siguiente bloque
-            $inicioBloque = (clone $finBloque)->modify("+$pausaEntreReservas seconds");
+                $this->em->persist($momento);
+
+                // Siguiente bloque
+                $inicioBloque = (clone $finBloque)->modify("+$pausaEntreReservas seconds");
+            }
         }
     }
-}
+
+
+    
+
 
 }

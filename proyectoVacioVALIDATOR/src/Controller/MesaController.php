@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Mesa;
 use App\Form\MesaType;
 use App\Repository\MesaRepository;
+use App\Service\MesaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,15 +26,20 @@ class MesaController extends AbstractController
     }
 
     #[Route('/nueva', name: 'nueva')]
-    public function nueva(Request $request, EntityManagerInterface $em): Response
+    public function nueva(Request $request, EntityManagerInterface $em, MesaService $mesaService): Response
     {
         $mesa = new Mesa();
         $form = $this->createForm(MesaType::class, $mesa);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) 
+        {
             $em->persist($mesa);
             $em->flush();
+           
+            //Llamamos al servicio para generar momentos reserva
+            $mesaService->regenerarMomentosParaMesa($mesa);
+
             $this->addFlash('success', 'Mesa creada correctamente.');
             return $this->redirectToRoute('gestion_mesas_index');
         }
@@ -44,14 +50,34 @@ class MesaController extends AbstractController
         ]);
     }
 
+    
     #[Route('/editar/{id}', name: 'editar')]
-    public function editar(Mesa $mesa, Request $request, EntityManagerInterface $em): Response
+    public function editar(Mesa $mesa, Request $request, MesaService $mesaService): Response
     {
+        // Guardamos el valor original ANTES de handleRequest
+        $originalOperativa = $mesa->isOperativa();
+        $originalCapacidad = $mesa->getCapacidad();
+        $originalIdentificador = $mesa->getIdentificador();
+
         $form = $this->createForm(MesaType::class, $mesa);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
+            $cambios = [];
+
+            if ($originalOperativa !== $mesa->isOperativa()) {
+                $cambios['operativa'] = $mesa->isOperativa();
+            }
+            if ($originalCapacidad !== $mesa->getCapacidad()) {
+                $cambios['capacidad'] = $mesa->getCapacidad();
+            }
+            if ($originalIdentificador !== $mesa->getIdentificador()) {
+                $cambios['identificador'] = $mesa->getIdentificador();
+            }
+
+            // PASAMOS el valor original para que el servicio compare correctamente
+            $mesaService->editarMesa($mesa, $cambios, $originalOperativa);
+
             $this->addFlash('success', 'Mesa actualizada correctamente.');
             return $this->redirectToRoute('gestion_mesas_index');
         }
@@ -62,18 +88,15 @@ class MesaController extends AbstractController
         ]);
     }
 
+
+
+
     #[Route('/eliminar/{id}', name: 'eliminar')]
-    public function eliminar(Mesa $mesa, EntityManagerInterface $em): Response
+    public function eliminar(Mesa $mesa,  MesaService $mesaService): Response
     {
-        if (count($mesa->getReservas()) > 0) {
-            $this->addFlash('danger', 'No se puede eliminar la mesa porque tiene reservas asociadas.');
-            return $this->redirectToRoute('gestion_mesas_index');
-        }
+       $mesaService->eliminarMesa($mesa);
 
-        $em->remove($mesa);
-        $em->flush();
-
-        $this->addFlash('success', 'Mesa eliminada correctamente.');
+        $this->addFlash('success', 'Mesa eliminada correctamente con sus reservas futuras.');
         return $this->redirectToRoute('gestion_mesas_index');
     }
 }

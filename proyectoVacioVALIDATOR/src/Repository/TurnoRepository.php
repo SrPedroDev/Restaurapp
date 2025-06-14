@@ -16,6 +16,16 @@ class TurnoRepository extends ServiceEntityRepository
         parent::__construct($registry, Turno::class);
     }
 
+    public function findTurnosFuturos(\DateTimeImmutable $ahora): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.fecha >= :ahora')
+            ->setParameter('ahora', $ahora)
+            ->getQuery()
+            ->getResult();
+    }
+
+
 //    /**
 //     * @return Turno[] Returns an array of Turno objects
 //     */

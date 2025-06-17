@@ -58,11 +58,11 @@ use App\Repository\MenuRepository;
 
 
 
-    #[Route('/inicio', name: 'inicio')]
+    #[Route('/', name: 'inicio')]
     public function inicio(): Response
     {
        
-            return $this->render('base.html.twig');
+            return $this->render('/security/login.html.twig');
         
     }
 

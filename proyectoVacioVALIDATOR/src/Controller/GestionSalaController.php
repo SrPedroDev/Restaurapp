@@ -338,6 +338,7 @@ final class GestionSalaController extends AbstractController
     #[Route('/Gestion/Reserva/Detalle/{id}', name: 'gestion_reserva_detalle')]
     public function detalleReserva(Reserva $reserva, Request $request): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
         $urlAnterior = $request->headers->get('referer');
 
         return $this->render('gestion_sala/detalle_reserva.html.twig', [
@@ -354,6 +355,9 @@ final class GestionSalaController extends AbstractController
     #[Route('/reservas/hoy', name: 'reservas_hoy')]
     public function reservasHoy(ReservaRepository $reservaRepository): Response
     {
+
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $hoy = new \DateTimeImmutable();
 
         $reservas = $reservaRepository->findReservasDelDiaAgrupadasPorMesa($hoy);
@@ -381,9 +385,10 @@ final class GestionSalaController extends AbstractController
     #[Route('/atencion/crear/{id}', name: 'crear_atencion', methods: ['POST'])]
     public function crearAtencion(Reserva $reserva, EntityManagerInterface $em): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         // Evita crear atención si ya existe en esta reserva
         if ($reserva->getAtencion() !== null) {
-            $this->addFlash('warning', 'Esta reserva ya tiene atención.');
             return $this->redirectToRoute('reservas_hoy');
         }
 
@@ -402,8 +407,7 @@ final class GestionSalaController extends AbstractController
             ->getOneOrNullResult();
 
         if ($atencionActiva !== null) {
-            $this->addFlash('danger', 'Ya hay una atención en curso en esta mesa. Finalízala antes de iniciar una nueva.');
-            return $this->redirectToRoute('gestion_sala_estado');
+            return $this->redirectToRoute('reservas_hoy');
         }
 
         // Crear atención nueva
@@ -427,6 +431,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/atencion/finalizar/{id}', name: 'finalizar_atencion', methods: ['POST'])]
     public function finalizarAtencion(Atencion $atencion, EntityManagerInterface $em): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         if ($atencion->getFin() !== null) {
             return $this->redirectToRoute('reservas_hoy');
         }
@@ -452,7 +458,11 @@ final class GestionSalaController extends AbstractController
     #[Route('/atencion/gestionar/{id}', name: 'gestion_atencion', methods: ['GET', 'POST'])]
     public function gestionarAtencion(Request $request, Atencion $atencion, EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $pedido = $atencion->getPedido();
+        $precioUnitario = $request->request->get('precio_unitario');
+
 
         // Procesar nuevo item si se envía el formulario
         if ($request->isMethod('POST')) {
@@ -467,14 +477,13 @@ final class GestionSalaController extends AbstractController
                     $item->setProducto($producto);
                     $item->setCantidad($cantidad);
                     $item->setPedido($pedido);
+                    $item->setPrecioUnitario($producto->getPrecio());
                     $em->persist($item);
                     $em->flush();
 
-                    $this->addFlash('success', 'Producto añadido al pedido.');
                     return $this->redirectToRoute('gestion_atencion', ['id' => $atencion->getId()]);
                 }
 
-                $this->addFlash('danger', 'Producto no válido.');
             }
         }
 
@@ -497,6 +506,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/pedido/item/eliminar/{id}', name: 'eliminar_pedido_item', methods: ['POST'])]
     public function eliminarPedidoItem(PedidoItem $item, EntityManagerInterface $em): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $atencionId = $item->getPedido()->getAtencion()->getId();
 
         $em->remove($item);
@@ -507,10 +518,31 @@ final class GestionSalaController extends AbstractController
     }
 
 
+    #[Route('/pedido-item/editar/{id}', name: 'editar_pedido_item', methods: ['GET', 'POST'])]
+    public function editarPedidoItem(Request $request, PedidoItem $item, EntityManagerInterface $em): Response
+    {
+
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
+        if ($request->isMethod('POST')) {
+            $cantidad = (int) $request->request->get('cantidad', $item->getCantidad());
+            $precioUnitario = floatval(str_replace(',', '.', $request->request->get('precioUnitario', $item->getPrecioUnitario())));
+
+            if ($cantidad > 0 && $precioUnitario >= 0) {
+                $item->setCantidad($cantidad);
+                $item->setPrecioUnitario($precioUnitario);
+                $em->flush();
 
 
+                // Redirigimos a la gestión de la atención para la que pertenece el pedido
+                return $this->redirectToRoute('gestion_atencion', ['id' => $item->getPedido()->getAtencion()->getId()]);
+            } 
+        }
 
-
+        return $this->render('gestion_sala/editar_pedido_item.html.twig', [
+            'item' => $item,
+        ]);
+    }
 
 
 }

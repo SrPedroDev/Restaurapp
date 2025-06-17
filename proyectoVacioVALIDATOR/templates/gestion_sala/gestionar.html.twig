@@ -53,15 +53,16 @@
             <tbody>
                 {% set total = 0 %}
                 {% for item in pedido.items %}
-                    {% set subtotal = item.cantidad * item.producto.precio %}
+                    {% set subtotal = item.cantidad * item.precioUnitario %}
                     {% set total = total + subtotal %}
                     <tr>
                         <td>{{ item.producto.nombre }}</td>
                         <td>{{ item.cantidad }}</td>
-                        <td>{{ item.producto.precio|number_format(2, ',', '.') }} €</td>
+                        <td>{{ item.precioUnitario|number_format(2, ',', '.') }} €</td>
                         <td>{{ subtotal|number_format(2, ',', '.') }} €</td>
                         <td class="text-end">
-                            <form method="POST" action="{{ path('eliminar_pedido_item', { id: item.id }) }}" onsubmit="return confirm('¿Eliminar este producto del pedido?');">
+                            <a href="{{ path('editar_pedido_item', { id: item.id }) }}" class="btn btn-sm btn-outline-warning">✏️</a>
+                            <form method="POST" action="{{ path('eliminar_pedido_item', { id: item.id }) }}" onsubmit="return confirm('¿Eliminar este producto del pedido?');" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
                             </form>
                         </td>

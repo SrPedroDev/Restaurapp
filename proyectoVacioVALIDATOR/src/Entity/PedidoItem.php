@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -22,6 +23,9 @@ class PedidoItem
 
     #[ORM\Column(type: 'smallint')]
     private int $cantidad;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private ?string $precioUnitario = null;
 
     public function getId(): ?int
     {
@@ -64,5 +68,17 @@ class PedidoItem
     public function getSubtotal(): float
     {
         return $this->producto ? $this->producto->getPrecio() * $this->cantidad : 0.0;
+    }
+
+    public function getPrecioUnitario(): ?string
+    {
+        return $this->precioUnitario;
+    }
+
+    public function setPrecioUnitario(string $precioUnitario): static
+    {
+        $this->precioUnitario = $precioUnitario;
+
+        return $this;
     }
 }

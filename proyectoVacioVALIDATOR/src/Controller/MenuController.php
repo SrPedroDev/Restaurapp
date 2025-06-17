@@ -97,36 +97,10 @@ use App\Repository\MenuRepository;
     }
 
 
-    #[Route('/servicios', name: 'servicios')]
-    public function servicios(): Response
-    {
-        return $this->redirectToRoute('listar_servicios');
-    }
-
 
     
 
 
-    #[Route('/citas', name: 'citas')]
-    public function citas(): Response
-    {
-
-        return $this->redirectToRoute('cita_entrada');
-    }
-
-
-    #[Route('/bolsa', name: 'bolsa')]
-    public function bolsa(): Response
-    {
-        return $this->redirectToRoute('bolsas_mostrar');
-    }
-
-
-    #[Route('/private/gestión_medicos', name: 'gestion_medicos')]
-    public function gestión_medicos(): Response
-    {
-        return $this->redirectToRoute('listar_medics');
-    }
 
 
 }

@@ -21,10 +21,13 @@ use App\Repository\MomentoReservaRepository;
 use App\Entity\MomentoReserva;
 use App\Service\TurnoGeneratorService;
 
+
 final class TurnogeneralController extends AbstractController{
 #[Route('/turno/general', name: 'config_turno_general')]
 public function configTurnoGeneral(EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         // 1. Obtener los 7 días
         $dias = $em->getRepository(DiaSemana::class)->findAll();
 
@@ -51,6 +54,8 @@ public function configTurnoGeneral(EntityManagerInterface $em): Response
 #[Route('/turno/general/guardar', name: 'guardar_turno_general', methods: ['POST'])]
 public function guardarTurnoGeneral(Request $request, EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $datos = $request->request->all('turnos');
 
     $repoDiaSemana = $em->getRepository(DiaSemana::class);

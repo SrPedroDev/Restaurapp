@@ -35,10 +35,11 @@ class Reserva
     private ?\DateTimeInterface $fechaHora = null;
 
 
-    #[ORM\OneToOne(mappedBy: 'reserva', cascade: ['persist'])]
+    #[ORM\OneToOne(mappedBy: 'reserva')]
     private ?MomentoReserva $momentoReserva = null;
 
     #[ORM\OneToOne(inversedBy: 'reserva', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Atencion $atencion = null;
 
     public function __construct()

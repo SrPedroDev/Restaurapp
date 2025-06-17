@@ -17,26 +17,39 @@ class MesaService
         private MomentoReservaRepository $momentoRepo,
     ) {}
 
+
+
+    public function hayReservasFuturas(Mesa $mesa, \DateTimeImmutable $now = null): array
+    {
+        if ($now === null) {
+            $now = new \DateTimeImmutable();
+        }
+        return $this->reservaRepo->findFuturasByMesa($mesa, $now);
+    }
+
+    
     public function eliminarMesa(Mesa $mesa): void
     {
-        $now = new \DateTimeImmutable();
+        // Eliminar todas las momentos reserva (futuros y pasados)
+        $momentos = $this->momentoRepo->findBy(['mesa' => $mesa]);
+
+        foreach ($momentos as $momento) {
+            $this->em->remove($momento);
+        }
 
         // Eliminar reservas futuras
+        $now = new \DateTimeImmutable();
         $reservasFuturas = $this->reservaRepo->findFuturasByMesa($mesa, $now);
         foreach ($reservasFuturas as $reserva) {
             $this->em->remove($reserva);
         }
 
-        // Eliminar momentosReserva futuros
-        $momentosFuturos = $this->momentoRepo->findFuturosByMesa($mesa, $now);
-        foreach ($momentosFuturos as $momento) {
-            $this->em->remove($momento);
-        }
-
-        // Eliminar mesa
+        // Finalmente eliminar mesa
         $this->em->remove($mesa);
         $this->em->flush();
     }
+
+
 
 
     public function editarMesa(Mesa $mesa, array $cambios, bool $originalOperativa): void
@@ -62,8 +75,8 @@ class MesaService
 
         // Si la mesa se volvió no operativa → eliminar momentos futuros
         if ($originalOperativa && !$nuevaOperativa) {
-            $momentosFuturos = $this->momentoRepo->findFuturosByMesa($mesa, $now);
-            foreach ($momentosFuturos as $momento) {
+            $momentosEliminar = $this->momentoRepo->findBy(['mesa' => $mesa]);
+            foreach ($momentosEliminar as $momento) {
                 $this->em->remove($momento);
             }
         }

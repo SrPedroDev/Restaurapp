@@ -32,6 +32,8 @@ use App\Repository\MenuRepository;
     #[Route(name: 'render_menuLateral')]
     public function menuLateral(): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
             $menus = $this->menuRepository->findMenu();
 
         return $this->render('menus/menu_lateral.html.twig', [
@@ -42,6 +44,8 @@ use App\Repository\MenuRepository;
         #[Route(name: 'render_menuDesplegable')]
     public function menuDesplegable(): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
             $menus = $this->menuRepository->findMenu();
 
         return $this->render('menus/menu_desplegable.html.twig', [

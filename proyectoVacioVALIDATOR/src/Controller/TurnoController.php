@@ -34,6 +34,8 @@ final class TurnoController extends AbstractController{
 #[Route('/turnos/gestion', name: 'gestion_turnos')]
 public function calendario3Meses(EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     // Fecha de inicio: primer día del mes actual
     $hoy = new \DateTime('first day of this month');
 
@@ -131,6 +133,8 @@ public function calendario3Meses(EntityManagerInterface $em): Response
 #[Route('/turnos/fecha/mostrar', name: 'turnos_mostrar_dia')]
 public function turnoMostrarDia(Request $request, EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $fechaString = $request->query->get('fecha');
 
     if (!$fechaString) {
@@ -155,6 +159,8 @@ public function turnoMostrarDia(Request $request, EntityManagerInterface $em): R
 #[Route('/turnos/fecha/editar', name: 'turno_editar')]
 public function turnoEditar(Request $request, EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $id = $request->query->get('id');
     $turno = $em->getRepository(Turno::class)->find($id);
 
@@ -208,6 +214,8 @@ public function turnoEditar(Request $request, EntityManagerInterface $em): Respo
 #[Route('/turnos/fecha/editar/confirmar', name: 'turno_editar_confirmar')]
 public function confirmarEdicion(Request $request, EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $id = $request->request->get('id');
     $horaInicio = $request->request->get('hora_inicio');
     $horaFin = $request->request->get('hora_fin');
@@ -246,6 +254,8 @@ public function confirmarEdicion(Request $request, EntityManagerInterface $em): 
 #[Route('/turnos/fecha/eliminar', name: 'turno_eliminar')]
 public function eliminarTurno(Request $request, EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $id = $request->query->get('id');
     $turno = $em->getRepository(Turno::class)->find($id);
 
@@ -287,6 +297,8 @@ public function eliminarTurno(Request $request, EntityManagerInterface $em): Res
 #[Route('/turnos/fecha/eliminar/confirmar', name: 'turno_eliminar_confirmar', methods: ['POST'])]
 public function confirmarEliminacion(Request $request, EntityManagerInterface $em): Response
 {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $id = $request->request->get('id');
     $turno = $em->getRepository(Turno::class)->find($id);
 
@@ -318,6 +330,9 @@ public function confirmarEliminacion(Request $request, EntityManagerInterface $e
 #[Route('/turnos/fecha/crear', name: 'turno_crear')]
 public function crearTurno(Request $request, EntityManagerInterface $em): Response
 {
+
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
     $fechaParam = $request->query->get('fecha');
     $tipo = $request->query->get('tipo');
 

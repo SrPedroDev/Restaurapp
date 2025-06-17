@@ -30,7 +30,7 @@
                         {% endif %}
                 </td>
                 <td>
-                    <a href="{{ path('gestion_mesas_editar', {id: mesa.id}) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{{ path('gestion_mesas_confirmar_edicion', {id: mesa.id}) }}" class="btn btn-sm btn-warning">Editar</a>
                     <a href="{{ path('gestion_mesas_eliminar', {id: mesa.id}) }}" class="btn btn-sm btn-danger"
                        onclick="return confirm('¿Estás seguro de que quieres eliminar esta mesa? Se eliminarán también sus reservas futuras.');">Eliminar</a>
                 </td>

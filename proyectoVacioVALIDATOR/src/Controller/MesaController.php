@@ -12,12 +12,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+
+
 #[Route('/Gestion/Mesas', name: 'gestion_mesas_')]
 class MesaController extends AbstractController
 {
     #[Route('/', name: 'index')]
     public function index(MesaRepository $mesaRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $mesas = $mesaRepository->findAll();
 
         return $this->render('gestion_mesas/index.html.twig', [
@@ -25,9 +29,12 @@ class MesaController extends AbstractController
         ]);
     }
 
+
     #[Route('/nueva', name: 'nueva')]
     public function nueva(Request $request, EntityManagerInterface $em, MesaService $mesaService): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $mesa = new Mesa();
         $form = $this->createForm(MesaType::class, $mesa);
         $form->handleRequest($request);
@@ -54,6 +61,8 @@ class MesaController extends AbstractController
     #[Route('/editar/{id}', name: 'editar')]
     public function editar(Mesa $mesa, Request $request, MesaService $mesaService): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         // Guardamos el valor original ANTES de handleRequest
         $originalOperativa = $mesa->isOperativa();
         $originalCapacidad = $mesa->getCapacidad();
@@ -89,11 +98,33 @@ class MesaController extends AbstractController
     }
 
 
+    #[Route('/confirmar-edicion/{id}', name: 'confirmar_edicion')]
+    public function confirmarEdicion(Mesa $mesa, MesaService $mesaService): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $hayReservas = $mesaService->hayReservasFuturas($mesa);
+
+        if (!$hayReservas) 
+        {
+            // Si no hay reservas futuras, redirigimos directamente a la edición
+            return $this->redirectToRoute('gestion_mesas_editar', ['id' => $mesa->getId()]);
+        }
+
+        return $this->render('gestion_mesas/confirmar_edicion.html.twig', [
+            'mesa' => $mesa,
+            'hayReservas' => $hayReservas,
+        ]);
+    }
+
+
 
 
     #[Route('/eliminar/{id}', name: 'eliminar')]
     public function eliminar(Mesa $mesa,  MesaService $mesaService): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
        $mesaService->eliminarMesa($mesa);
 
         $this->addFlash('success', 'Mesa eliminada correctamente con sus reservas futuras.');

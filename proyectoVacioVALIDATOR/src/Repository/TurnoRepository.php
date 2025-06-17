@@ -16,14 +16,26 @@ class TurnoRepository extends ServiceEntityRepository
         parent::__construct($registry, Turno::class);
     }
 
-    public function findTurnosFuturos(\DateTimeImmutable $ahora): array
+public function findTurnosFuturos(\DateTimeImmutable $ahora): array
+{
+    // Trae todos los turnos desde hoy
+    $turnos = $this->createQueryBuilder('t')
+        ->where('t.fecha >= :hoy')
+        ->setParameter('hoy', $ahora->format('Y-m-d'))
+        ->getQuery()
+        ->getResult();
+
+    // Filtra en PHP los turnos que realmente sean futuros
+    return array_filter($turnos, function($turno) use ($ahora) 
     {
-        return $this->createQueryBuilder('t')
-            ->where('t.fecha >= :ahora')
-            ->setParameter('ahora', $ahora)
-            ->getQuery()
-            ->getResult();
-    }
+        $fechaHora = (clone $turno->getFecha())->setTime(
+            $turno->getHoraInicio()->format('H'),
+            $turno->getHoraInicio()->format('i'),
+            $turno->getHoraInicio()->format('s')
+        );
+        return $fechaHora >= $ahora;
+    });
+}
 
 
 //    /**

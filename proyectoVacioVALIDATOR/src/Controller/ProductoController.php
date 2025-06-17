@@ -35,6 +35,8 @@ final class ProductoController extends AbstractController{
     #[Route('/producto/editar/{id}', name: 'producto_editar')]
     public function editarProducto(int $id, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $producto = $entityManager->getRepository(Producto::class)->find($id);
 
         if (!$producto) {
@@ -132,6 +134,8 @@ final class ProductoController extends AbstractController{
     #[Route('/producto/eliminar/{id}', name: 'producto_eliminar')]
     public function eliminarProducto(int $id, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $producto = $entityManager->getRepository(Producto::class)->find($id);
 
         if (!$producto) {
@@ -160,6 +164,8 @@ final class ProductoController extends AbstractController{
     #[Route('/producto/nuevo/{categoriaId}', name: 'producto_nuevo')]
     public function nuevoProducto(int $categoriaId, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $categoria = $entityManager->getRepository(Categoria::class)->find($categoriaId);
         if (!$categoria) 
         {

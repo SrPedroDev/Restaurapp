@@ -19,11 +19,15 @@ use App\Entity\Reserva;
 use App\Repository\MomentoReservaRepository;
 use App\Entity\MomentoReserva;
 
+
+
 final class MenuTurnoController extends AbstractController{
 
 #[Route('/turno/inicio', name: 'inicio_turno')]
 public function index(EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         return $this->render('/turno/index.html.twig');
     }
 

@@ -30,6 +30,24 @@ class ReservaRepository extends ServiceEntityRepository
     }
 
 
+    public function findReservasDelDiaAgrupadasPorMesa(\DateTimeInterface $fecha): array
+    {
+        $inicio = (clone $fecha)->setTime(0, 0, 0);
+        $fin = (clone $fecha)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.mesa', 'm')
+            ->addSelect('m')
+            ->where('r.fechaHora BETWEEN :inicio AND :fin')
+            ->setParameter('inicio', $inicio)
+            ->setParameter('fin', $fin)
+            ->orderBy('m.identificador', 'ASC')  // Usamos el campo correcto
+            ->addOrderBy('r.fechaHora', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 //    /**
 //     * @return Reserva[] Returns an array of Reserva objects
 //     */

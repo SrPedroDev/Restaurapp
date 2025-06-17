@@ -11,10 +11,14 @@ use App\Repository\CategoriaRepository;
 use App\Repository\ProductoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
+
+
 final class CategoriaController extends AbstractController{
     #[Route('/carta', name: 'listar_categorias')]
     public function listarCategorias(CategoriaRepository $categoriaRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
 
         $categorias = $categoriaRepository->findAll();
 
@@ -23,10 +27,12 @@ final class CategoriaController extends AbstractController{
         ]);
     }
 
-
+    
     #[Route('/carta/productos/{id}', name: 'productos_por_categoria')]
     public function productosPorCategoria(Categoria $categoria, ProductoRepository $productoRepository)
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $productos = $productoRepository->findBy(['categoria' => $categoria]);
 
         return $this->render('carta/productos_categoria.html.twig', [

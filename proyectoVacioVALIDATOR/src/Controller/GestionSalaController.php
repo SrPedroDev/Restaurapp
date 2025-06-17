@@ -5,16 +5,29 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+
 use App\Entity\Turno;
 use App\Entity\TurnoGeneral;
 use App\Entity\Mesa;
 use App\Entity\MomentoReserva;
 use App\Entity\Reserva;
+use App\Entity\Atencion;
+use App\Entity\Pedido;
+use App\Entity\PedidoItem;
+use App\Entity\Producto;
+
+
 use App\Repository\ReservaRepository;
 use App\Repository\TurnoRepository;
+use App\Repository\ProductoRepository;
+
+
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GestionSalaService;
 use Symfony\Component\HttpFoundation\Request;
+
 
 final class GestionSalaController extends AbstractController
 {
@@ -31,6 +44,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/Gestion/Sala', name: 'gestion_sala_menu')]
     public function menuGestionSala(): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $fechaHoy = new \DateTime(); // Fecha actual
         return $this->render('gestion_sala/menu.html.twig', [
             'fechaHoy' => $fechaHoy->format('Y-m-d')
@@ -42,6 +57,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/gestion/sala/estado', name: 'gestion_sala_estado')]
     public function index(Request $request, TurnoRepository $turnoRepo): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         // Fecha de inicio: primer día del mes actual
         $hoy = new \DateTime('first day of this month');
 
@@ -126,6 +143,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/Gestion/Seleccionar-Turno', name: 'gestion_mostrar_turnos')]
     public function gestionMostrarDia(Request $request, EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $fechaString = $request->query->get('fecha');
 
         if (!$fechaString) {
@@ -151,6 +170,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/sala/disponibilidad/{id}', name: 'sala_disponibilidad')]
     public function verDisponibilidad(int $id): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $turno = $this->em->getRepository(Turno::class)->find($id);
         if (!$turno) {
             throw $this->createNotFoundException('Turno no encontrado');
@@ -172,6 +193,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/reserva/nueva/{id}', name: 'reserva_opciones')]
     public function seleccionarTipoReserva(int $id, EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $momento = $em->getRepository(MomentoReserva::class)->find($id);
 
         if (!$momento || $momento->getReserva()) {
@@ -187,6 +210,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/reserva/asignar/{id}', name: 'reserva_asignar')]
     public function asignarMesa(Request $request, int $id, EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $momento = $em->getRepository(MomentoReserva::class)->find($id);
 
         if (!$momento || $momento->getReserva()) {
@@ -221,6 +246,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/reserva/crear/{id}', name: 'reserva_crear_formulario')]
     public function crearFormulario(Request $request, int $id, EntityManagerInterface $em): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $momento = $em->getRepository(MomentoReserva::class)->find($id);
 
         if (!$momento || $momento->getReserva()) {
@@ -256,6 +283,8 @@ final class GestionSalaController extends AbstractController
     #[Route('/Gestion/Reserva/Eliminar/{id}', name: 'gestion_reserva_eliminar')]
     public function eliminarReserva(Reserva $reserva, EntityManagerInterface $em, Request $request): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         // Confirmación por método POST
         if ($request->isMethod('POST')) {
             // Desvincula del MomentoReserva si existe
@@ -276,9 +305,13 @@ final class GestionSalaController extends AbstractController
         ]);
     }
 
+
+
     #[Route('/Gestion/Reservas', name: 'gestion_reservas_listado')]
     public function listarReservasFuturas(ReservaRepository $reservaRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
+
         $hoy = new \DateTime('today');
 
         // Obtenemos las reservas futuras ordenadas por fecha
@@ -312,6 +345,167 @@ final class GestionSalaController extends AbstractController
             'volverA' => $urlAnterior,
         ]);
     }
+
+
+
+
+
+    
+    #[Route('/reservas/hoy', name: 'reservas_hoy')]
+    public function reservasHoy(ReservaRepository $reservaRepository): Response
+    {
+        $hoy = new \DateTimeImmutable();
+
+        $reservas = $reservaRepository->findReservasDelDiaAgrupadasPorMesa($hoy);
+
+        // Agrupar por identificador de mesa
+        $agrupadasPorMesa = [];
+        foreach ($reservas as $reserva) {
+            $mesa = $reserva->getMesa();
+            $identificador = $mesa ? $mesa->getIdentificador() : 'Sin mesa asignada';
+
+            $agrupadasPorMesa[$identificador][] = $reserva;
+        }
+
+        ksort($agrupadasPorMesa); // orden alfabético por identificador
+
+        return $this->render('gestion_sala/lista_hoy.html.twig', [
+            'agrupadasPorMesa' => $agrupadasPorMesa,
+        ]);
+    }
+
+
+
+
+
+    #[Route('/atencion/crear/{id}', name: 'crear_atencion', methods: ['POST'])]
+    public function crearAtencion(Reserva $reserva, EntityManagerInterface $em): RedirectResponse
+    {
+        // Evita crear atención si ya existe en esta reserva
+        if ($reserva->getAtencion() !== null) {
+            $this->addFlash('warning', 'Esta reserva ya tiene atención.');
+            return $this->redirectToRoute('reservas_hoy');
+        }
+
+        $mesa = $reserva->getMesa();
+
+        // Buscar si hay otra atención activa (sin fin) para esta mesa
+        $qb = $em->createQueryBuilder();
+        $atencionActiva = $qb->select('a')
+            ->from(\App\Entity\Atencion::class, 'a')
+            ->join('a.reserva', 'r')
+            ->where('r.mesa = :mesa')
+            ->andWhere('a.fin IS NULL')
+            ->setParameter('mesa', $mesa)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($atencionActiva !== null) {
+            $this->addFlash('danger', 'Ya hay una atención en curso en esta mesa. Finalízala antes de iniciar una nueva.');
+            return $this->redirectToRoute('gestion_sala_estado');
+        }
+
+        // Crear atención nueva
+        $pedido = new Pedido();
+        $atencion = new Atencion();
+        $atencion->setPedido($pedido);
+        $atencion->setInicio(new \DateTimeImmutable());
+
+        $reserva->setAtencion($atencion);
+
+        $em->persist($pedido);
+        $em->persist($atencion);
+        $em->persist($reserva);
+        $em->flush();
+
+        return $this->redirectToRoute('reservas_hoy');
+    }
+
+
+
+    #[Route('/atencion/finalizar/{id}', name: 'finalizar_atencion', methods: ['POST'])]
+    public function finalizarAtencion(Atencion $atencion, EntityManagerInterface $em): RedirectResponse
+    {
+        if ($atencion->getFin() !== null) {
+            return $this->redirectToRoute('reservas_hoy');
+        }
+
+        $fin = new \DateTimeImmutable();
+        $atencion->setFin($fin);
+
+        $finConLimpieza = $fin->modify('+5 minutes');
+
+        // Actualizar hora de fin del momentoReserva
+        $reserva = $atencion->getReserva();
+        if ($reserva && $reserva->getMomentoReserva()) 
+        {
+            $reserva->getMomentoReserva()->setHoraFin($finConLimpieza);
+        }
+
+        $em->flush();
+
+        return $this->redirectToRoute('reservas_hoy');
+    }
+
+
+    #[Route('/atencion/gestionar/{id}', name: 'gestion_atencion', methods: ['GET', 'POST'])]
+    public function gestionarAtencion(Request $request, Atencion $atencion, EntityManagerInterface $em): Response
+    {
+        $pedido = $atencion->getPedido();
+
+        // Procesar nuevo item si se envía el formulario
+        if ($request->isMethod('POST')) {
+            $productoId = $request->request->get('producto_id');
+            $cantidad = (int) $request->request->get('cantidad', 1);
+
+            if ($productoId && $cantidad > 0) {
+                $producto = $em->getRepository(Producto::class)->find($productoId);
+
+                if ($producto) {
+                    $item = new PedidoItem();
+                    $item->setProducto($producto);
+                    $item->setCantidad($cantidad);
+                    $item->setPedido($pedido);
+                    $em->persist($item);
+                    $em->flush();
+
+                    $this->addFlash('success', 'Producto añadido al pedido.');
+                    return $this->redirectToRoute('gestion_atencion', ['id' => $atencion->getId()]);
+                }
+
+                $this->addFlash('danger', 'Producto no válido.');
+            }
+        }
+
+        // Obtener productos agrupados por categoría
+        $productos = $em->getRepository(Producto::class)->findAll();
+        $productosPorCategoria = [];
+
+        foreach ($productos as $producto) {
+            $categoria = $producto->getCategoria()?->getNombre() ?? 'Sin categoría';
+            $productosPorCategoria[$categoria][] = $producto;
+        }
+
+        return $this->render('gestion_sala/gestionar.html.twig', [
+            'atencion' => $atencion,
+            'pedido' => $pedido,
+            'productosPorCategoria' => $productosPorCategoria,
+        ]);
+    }
+
+    #[Route('/pedido/item/eliminar/{id}', name: 'eliminar_pedido_item', methods: ['POST'])]
+    public function eliminarPedidoItem(PedidoItem $item, EntityManagerInterface $em): RedirectResponse
+    {
+        $atencionId = $item->getPedido()->getAtencion()->getId();
+
+        $em->remove($item);
+        $em->flush();
+
+        $this->addFlash('success', 'Producto eliminado del pedido.');
+        return $this->redirectToRoute('gestion_atencion', ['id' => $atencionId]);
+    }
+
 
 
 

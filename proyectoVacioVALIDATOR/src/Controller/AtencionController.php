@@ -10,7 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/atencion')]
+
+#[Route('/admin/atencion')]
 final class AtencionController extends AbstractController{
     #[Route(name: 'app_atencion_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response

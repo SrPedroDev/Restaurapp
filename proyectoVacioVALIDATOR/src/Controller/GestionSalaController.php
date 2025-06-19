@@ -314,9 +314,11 @@ final class GestionSalaController extends AbstractController
 
         $hoy = new \DateTime('today');
 
-        // Obtenemos las reservas futuras ordenadas por fecha
-        $reservas = $reservaRepository->createQueryBuilder('r')
+        // Obtenemos las reservas futuras ordenadas por fecha y que su atención no haya finalizado.
+        $reservas = $reservaRepository->createQueryBuilder('r')     
+            ->leftJoin('r.atencion', 'a')
             ->where('r.fechaHora >= :hoy')
+            ->andWhere('a.id IS NULL OR a.fin IS NULL')     //En teoría funciona, está comprobado a medias, pero debería de funcionar
             ->setParameter('hoy', $hoy)
             ->orderBy('r.fechaHora', 'ASC')
             ->getQuery()

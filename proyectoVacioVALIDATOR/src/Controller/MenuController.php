@@ -8,26 +8,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Security;
 
-
-
 use App\Entity\Menu;
 use App\Repository\MenuRepository;
-//use App\Entity\MenuLogeado;
-//use App\Repository\MenuLogeadoRepository;
-
-
 
 
 
  class MenuController extends AbstractController
 {
     private $menuRepository;
-   // private $menuLogeadoRepository;
 
 
-    public function  __construct ( MenuRepository $menuRepository,/* MenuLogeadoRepository $menuLogeadoRepository*/){
+    public function  __construct ( MenuRepository $menuRepository){
         $this->menuRepository = $menuRepository;
-        //$this->menuLogeadoRepository = $menuLogeadoRepository;
     }
 
 
@@ -62,45 +54,10 @@ use App\Repository\MenuRepository;
     }
 
 
-
-
-
-
-
-
-  /*  #[Route('/private/log', name: 'log')]
-    public function log(): Response
-    {
-        $user = $this->getUser();
-        
-        if ($user) 
-        {
-            $menus = $this->menuLogeadoRepository->findMenu();
-            return $this->render('menu/menu_dinamicamente.html.twig', array("menus"=>$menus));
-        } 
-        else 
-        {
-            $menus = $this->menuRepository->findMenu();
-            return $this->render('menu/menu_dinamicamente.html.twig', array("menus"=>$menus));
-        }
-    }
-
-*/
-
-
-
-
     #[Route('/carta', name: 'carta')]
     public function carta(): Response
     {
         return $this->redirectToRoute('listar_categorias');
     }
-
-
-
-    
-
-
-
 
 }

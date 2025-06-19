@@ -215,7 +215,6 @@ final class GestionSalaController extends AbstractController
         $momento = $em->getRepository(MomentoReserva::class)->find($id);
 
         if (!$momento || $momento->getReserva()) {
-            $this->addFlash('danger', 'Este momento no está disponible.');
             return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento?->getTurno()->getId()]);
         }
 
@@ -234,7 +233,6 @@ final class GestionSalaController extends AbstractController
             $em->persist($reserva);
             $em->flush();
 
-            $this->addFlash('success', 'Mesa asignada correctamente.');
             return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento->getTurno()->getId()]);
         }
 
@@ -251,7 +249,6 @@ final class GestionSalaController extends AbstractController
         $momento = $em->getRepository(MomentoReserva::class)->find($id);
 
         if (!$momento || $momento->getReserva()) {
-            $this->addFlash('danger', 'Este momento no está disponible.');
             return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento?->getTurno()->getId()]);
         }
 
@@ -268,7 +265,6 @@ final class GestionSalaController extends AbstractController
             $em->persist($reserva);
             $em->flush();
 
-            $this->addFlash('success', 'Reserva creada correctamente.');
             return $this->redirectToRoute('sala_disponibilidad', ['id' => $momento->getTurno()->getId()]);
         }
 
@@ -296,7 +292,6 @@ final class GestionSalaController extends AbstractController
             $em->remove($reserva);
             $em->flush();
 
-            $this->addFlash('success', 'Reserva eliminada correctamente.');
             return $this->redirectToRoute('gestion_sala_estado'); 
         }
 
@@ -526,7 +521,6 @@ final class GestionSalaController extends AbstractController
         $em->remove($item);
         $em->flush();
 
-        $this->addFlash('success', 'Producto eliminado del pedido.');
         return $this->redirectToRoute('gestion_atencion', ['id' => $atencionId]);
     }
 

@@ -81,7 +81,6 @@ final class ProductoController extends AbstractController{
                     }
                     $producto->setImagen(null);
                     $entityManager->flush();
-                    $this->addFlash('success', 'Imagen eliminada correctamente.');
                 }
             }
 
@@ -98,7 +97,6 @@ final class ProductoController extends AbstractController{
                     try {
                         $imagenFile->move($directorioDestino, $nuevoNombre);
                     } catch (FileException $e) {
-                        $this->addFlash('error', 'Error al subir la imagen.');
                     }
 
                     if ($producto->getImagen()) {
@@ -112,7 +110,6 @@ final class ProductoController extends AbstractController{
                 }
 
                 $entityManager->flush();
-                $this->addFlash('success', 'Producto actualizado correctamente.');
 
                 return $this->redirectToRoute('productos_por_categoria', [
                     'id' => $producto->getCategoria()->getId()
@@ -154,7 +151,6 @@ final class ProductoController extends AbstractController{
         $entityManager->remove($producto);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Producto eliminado correctamente.');
 
         return $this->redirectToRoute('productos_por_categoria', [
                 'id' => $producto->getCategoria()->getId()
@@ -218,8 +214,6 @@ final class ProductoController extends AbstractController{
                         $nuevoNombre
                     );
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Error al subir la imagen.');
-                    // Opcional: manejar el error o redirigir
                 }
 
                 $producto->setImagen($nuevoNombre);
@@ -228,7 +222,6 @@ final class ProductoController extends AbstractController{
             $entityManager->persist($producto);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Producto creado correctamente.');
 
             // Ajusta la redirección a la ruta que necesites
             return $this->redirectToRoute('productos_por_categoria', ['id' => $producto->getCategoria()->getId()]);

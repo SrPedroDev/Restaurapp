@@ -26,17 +26,18 @@ class CrearDatosInicialesCommand extends Command
     {
         // --- MENÚS ---
         $menus = [
-            ['id' => 3, 'titulo' => 'Gestión Carta', 'enlace' => 'listar_categorias', 'orden' => 3],
-            ['id' => 4, 'titulo' => 'Gestion Turnos', 'enlace' => 'inicio_turno', 'orden' => 2],
-            ['id' => 5, 'titulo' => 'Gestion Sala', 'enlace' => 'gestion_sala_menu', 'orden' => 1],
-            ['id' => 6, 'titulo' => 'Gestión Mesas', 'enlace' => 'gestion_mesas_index', 'orden' => 4],
-            ['id' => 7, 'titulo' => 'Registros de reservas', 'enlace' => 'historico_reservas_calendario', 'orden' => 5],
+            ['titulo' => 'Gestión Carta', 'enlace' => 'listar_categorias', 'orden' => 3],
+            ['titulo' => 'Gestion Turnos', 'enlace' => 'inicio_turno', 'orden' => 2],
+            ['titulo' => 'Gestion Sala', 'enlace' => 'gestion_sala_menu', 'orden' => 1],
+            ['titulo' => 'Gestión Mesas', 'enlace' => 'gestion_mesas_index', 'orden' => 4],
+            ['titulo' => 'Registros de reservas', 'enlace' => 'historico_reservas_calendario', 'orden' => 5],
         ];
 
+
         foreach ($menus as $data) {
-            if (!$this->em->getRepository(Menu::class)->find($data['id'])) {
+            $exists = $this->em->getRepository(Menu::class)->findOneBy(['enlace' => $data['enlace']]);
+            if (!$exists) {
                 $menu = new Menu();
-                $menu->setId($data['id']);
                 $menu->setTitulo($data['titulo']);
                 $menu->setEnlace($data['enlace']);
                 $menu->setOrden($data['orden']);
@@ -46,19 +47,19 @@ class CrearDatosInicialesCommand extends Command
 
         // --- DÍAS DE LA SEMANA ---
         $dias = [
-            ['id' => 1, 'nombre' => 'Lunes', 'numero' => 1],
-            ['id' => 2, 'nombre' => 'Martes', 'numero' => 2],
-            ['id' => 3, 'nombre' => 'Miercoles', 'numero' => 3],
-            ['id' => 4, 'nombre' => 'Jueves', 'numero' => 4],
-            ['id' => 5, 'nombre' => 'Viernes', 'numero' => 5],
-            ['id' => 6, 'nombre' => 'Sabado', 'numero' => 6],
-            ['id' => 7, 'nombre' => 'Domingo', 'numero' => 7],
+            ['nombre' => 'Lunes', 'numero' => 1],
+            ['nombre' => 'Martes', 'numero' => 2],
+            ['nombre' => 'Miercoles', 'numero' => 3],
+            ['nombre' => 'Jueves', 'numero' => 4],
+            ['nombre' => 'Viernes', 'numero' => 5],
+            ['nombre' => 'Sabado', 'numero' => 6],
+            ['nombre' => 'Domingo', 'numero' => 7],
         ];
 
         foreach ($dias as $data) {
-            if (!$this->em->getRepository(DiaSemana::class)->find($data['id'])) {
+            $exists = $this->em->getRepository(DiaSemana::class)->findOneBy(['numero' => $data['numero']]);
+            if (!$exists) {
                 $dia = new DiaSemana();
-                $dia->setId($data['id']);
                 $dia->setNombre($data['nombre']);
                 $dia->setNumero($data['numero']);
                 $this->em->persist($dia);
@@ -67,17 +68,17 @@ class CrearDatosInicialesCommand extends Command
 
         // --- CATEGORÍAS ---
         $categorias = [
-            ['id' => 1, 'nombre' => 'Primeros', 'icono' => 'primero.png'],
-            ['id' => 2, 'nombre' => 'Segundos', 'icono' => 'segundo.png'],
-            ['id' => 3, 'nombre' => 'Entrantes', 'icono' => 'entrante.png'],
-            ['id' => 4, 'nombre' => 'Postres', 'icono' => 'postres.png'],
-            ['id' => 5, 'nombre' => 'Bebidas', 'icono' => 'bebidas.png'],
+            ['nombre' => 'Primeros', 'icono' => 'primero.png'],
+            ['nombre' => 'Segundos', 'icono' => 'segundo.png'],
+            ['nombre' => 'Entrantes', 'icono' => 'entrante.png'],
+            ['nombre' => 'Postres', 'icono' => 'postres.png'],
+            ['nombre' => 'Bebidas', 'icono' => 'bebidas.png'],
         ];
 
         foreach ($categorias as $data) {
-            if (!$this->em->getRepository(Categoria::class)->find($data['id'])) {
+            $exists = $this->em->getRepository(Categoria::class)->findOneBy(['nombre' => $data['nombre']]);
+            if (!$exists) {
                 $categoria = new Categoria();
-                $categoria->setId($data['id']);
                 $categoria->setNombre($data['nombre']);
                 $categoria->setIcono($data['icono']);
                 $this->em->persist($categoria);

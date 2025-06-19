@@ -47,7 +47,6 @@ class MesaController extends AbstractController
             //Llamamos al servicio para generar momentos reserva
             $mesaService->regenerarMomentosParaMesa($mesa);
 
-            $this->addFlash('success', 'Mesa creada correctamente.');
             return $this->redirectToRoute('gestion_mesas_index');
         }
 
@@ -87,7 +86,6 @@ class MesaController extends AbstractController
             // PASAMOS el valor original para que el servicio compare correctamente
             $mesaService->editarMesa($mesa, $cambios, $originalOperativa);
 
-            $this->addFlash('success', 'Mesa actualizada correctamente.');
             return $this->redirectToRoute('gestion_mesas_index');
         }
 
@@ -127,7 +125,6 @@ class MesaController extends AbstractController
 
        $mesaService->eliminarMesa($mesa);
 
-        $this->addFlash('success', 'Mesa eliminada correctamente con sus reservas futuras.');
         return $this->redirectToRoute('gestion_mesas_index');
     }
 }

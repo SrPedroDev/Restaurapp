@@ -245,7 +245,6 @@ public function confirmarEdicion(Request $request, EntityManagerInterface $em): 
     $this->turnoGeneratorService->generarMomentosReservaParaTurno($turno);
     $em->flush(); // Aseguramos que los momentos de reserva se guarden
 
-    $this->addFlash('success', 'Turno actualizado y reservas eliminadas.');
     return $this->redirectToRoute('turnos_mostrar_dia', ['fecha' => $turno->getFecha()->format('Y-m-d')]);
 }
 

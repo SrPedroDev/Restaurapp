@@ -96,7 +96,6 @@ public function guardarTurnoGeneral(Request $request, EntityManagerInterface $em
                         $turno->setreservasPorMesa((int)$reservasPorMesa);
                     }
                 } else {
-                    $this->addFlash('error', "La hora de inicio debe ser anterior a la hora de fin para el turno de {$tipo} del día {$dia->getNombre()}.");
                     return $this->redirectToRoute('config_turno_general');
                 }
             } elseif ($turno) {
@@ -107,7 +106,6 @@ public function guardarTurnoGeneral(Request $request, EntityManagerInterface $em
 
     $em->flush();
 
-    $this->addFlash('success', 'Turnos actualizados correctamente.');
     return $this->redirectToRoute('config_turno_general');
 }
 

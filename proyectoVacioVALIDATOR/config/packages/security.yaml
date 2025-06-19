@@ -31,3 +31,5 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/empleado, roles: ROLE_ADMIN }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+
+

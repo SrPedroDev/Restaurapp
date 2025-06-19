@@ -394,7 +394,7 @@ final class GestionSalaController extends AbstractController
 
         $mesa = $reserva->getMesa();
 
-        // Buscar si hay otra atención activa (sin fin) para esta mesa
+        // Buscar atención activa sin cerrar para esa mesa
         $qb = $em->createQueryBuilder();
         $atencionActiva = $qb->select('a')
             ->from(\App\Entity\Atencion::class, 'a')
@@ -407,7 +407,18 @@ final class GestionSalaController extends AbstractController
             ->getOneOrNullResult();
 
         if ($atencionActiva !== null) {
-            return $this->redirectToRoute('reservas_hoy');
+            $fechaInicio = $atencionActiva->getInicio()->format('Y-m-d');
+            $hoy = (new \DateTimeImmutable())->format('Y-m-d');
+
+            if ($fechaInicio < $hoy) {
+                // Cerrar automáticamente la atención anterior
+                $atencionActiva->setFin(new \DateTimeImmutable());
+                $em->persist($atencionActiva);
+                $em->flush();
+            } else {
+                // Si la atención activa es de hoy, no permitir otra
+                return $this->redirectToRoute('reservas_hoy');
+            }
         }
 
         // Crear atención nueva
@@ -425,6 +436,7 @@ final class GestionSalaController extends AbstractController
 
         return $this->redirectToRoute('reservas_hoy');
     }
+
 
 
 
@@ -461,10 +473,7 @@ final class GestionSalaController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_EMPLEADO');
 
         $pedido = $atencion->getPedido();
-        $precioUnitario = $request->request->get('precio_unitario');
 
-
-        // Procesar nuevo item si se envía el formulario
         if ($request->isMethod('POST')) {
             $productoId = $request->request->get('producto_id');
             $cantidad = (int) $request->request->get('cantidad', 1);
@@ -474,16 +483,15 @@ final class GestionSalaController extends AbstractController
 
                 if ($producto) {
                     $item = new PedidoItem();
-                    $item->setProducto($producto);
-                    $item->setCantidad($cantidad);
                     $item->setPedido($pedido);
+                    $item->setCantidad($cantidad);
+                    $item->setNombreProducto($producto->getNombre());
                     $item->setPrecioUnitario($producto->getPrecio());
                     $em->persist($item);
                     $em->flush();
 
                     return $this->redirectToRoute('gestion_atencion', ['id' => $atencion->getId()]);
                 }
-
             }
         }
 
@@ -502,6 +510,9 @@ final class GestionSalaController extends AbstractController
             'productosPorCategoria' => $productosPorCategoria,
         ]);
     }
+
+
+
 
     #[Route('/pedido/item/eliminar/{id}', name: 'eliminar_pedido_item', methods: ['POST'])]
     public function eliminarPedidoItem(PedidoItem $item, EntityManagerInterface $em): RedirectResponse

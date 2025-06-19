@@ -28,4 +28,8 @@ class SecurityController extends AbstractController
         // Symfony intercepta esta ruta automáticamente
         throw new \LogicException('Este método puede estar vacío: es gestionado por Symfony.');
     }
+
+
+
+
 }

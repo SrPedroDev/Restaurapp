@@ -19,7 +19,7 @@
     {% for mesaId, data in momentos %}
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-light">
-                <h5 class="mb-0">Mesa {{ data.mesa.identificador }}</h5>
+                <h5 class="mb-0">{{ data.mesa.identificador }}</h5>
                 <span class="text-muted">{{ data.mesa.capacidad }} comensales</span>
             </div>
             <div class="card-body p-2">

@@ -9,10 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(
-    name: 'app:crear-categorias',
-    description: 'Crea las categorías iniciales del restaurante.',
-)]
+#[AsCommand(name: 'app:crear-categorias',description: 'Crea las categorías iniciales del restaurante.',)]
 class CrearCategoriasCommand extends Command
 {
     private EntityManagerInterface $em;

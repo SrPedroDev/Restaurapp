@@ -56,7 +56,7 @@
                     {% set subtotal = item.cantidad * item.precioUnitario %}
                     {% set total = total + subtotal %}
                     <tr>
-                        <td>{{ item.producto.nombre }}</td>
+                        <td>{{ item.nombreProducto }}</td>
                         <td>{{ item.cantidad }}</td>
                         <td>{{ item.precioUnitario|number_format(2, ',', '.') }} €</td>
                         <td>{{ subtotal|number_format(2, ',', '.') }} €</td>

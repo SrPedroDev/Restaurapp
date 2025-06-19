@@ -183,6 +183,7 @@ public function turnoEditar(Request $request, EntityManagerInterface $em): Respo
         $nuevaHoraFin = $request->request->get('hora_fin');
         $nuevasreservasPorMesa = $request->request->get('reservas_por_turno');
 
+
         if ($hayReservas) {
             return $this->render('turno/confirmar_edicion.html.twig', [
                 'turno' => $turno,
@@ -220,6 +221,7 @@ public function confirmarEdicion(Request $request, EntityManagerInterface $em): 
     $horaInicio = $request->request->get('hora_inicio');
     $horaFin = $request->request->get('hora_fin');
     $reservasPorMesa = $request->request->get('reservas_por_turno');
+
 
     $turno = $em->getRepository(Turno::class)->find($id);
     if (!$turno) {

@@ -17,15 +17,14 @@ class PedidoItem
     #[ORM\JoinColumn(nullable: false)]
     private ?Pedido $pedido = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Producto $producto = null;
-
     #[ORM\Column(type: 'smallint')]
     private int $cantidad;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $precioUnitario = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nombreProducto = null;
 
     public function getId(): ?int
     {
@@ -78,6 +77,18 @@ class PedidoItem
     public function setPrecioUnitario(string $precioUnitario): static
     {
         $this->precioUnitario = $precioUnitario;
+
+        return $this;
+    }
+
+    public function getNombreProducto(): ?string
+    {
+        return $this->nombreProducto;
+    }
+
+    public function setNombreProducto(string $nombreProducto): static
+    {
+        $this->nombreProducto = $nombreProducto;
 
         return $this;
     }

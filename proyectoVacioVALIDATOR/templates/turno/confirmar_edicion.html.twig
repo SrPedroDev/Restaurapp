@@ -21,6 +21,7 @@
         <input type="hidden" name="id" value="{{ turno.id }}">
         <input type="hidden" name="hora_inicio" value="{{ nuevaHoraInicio }}">
         <input type="hidden" name="hora_fin" value="{{ nuevaHoraFin }}">
+        <input type="hidden" name="reservas_por_turno" value="{{ reservasPorMesa }}">
         <button type="submit">Confirmar y aplicar cambios</button>
         <a href="{{ path('turnos_mostrar_dia', {'fecha': turno.fecha|date('Y-m-d')}) }}">Cancelar</a>
     </form>
